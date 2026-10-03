@@ -1,0 +1,10 @@
+# Exclude quiztable from HTML validity checks (ESLint and the Mustache checks
+# still run, and every other template here stays fully validated).
+#
+# It is a page fragment, not a standalone document: its checkboxes carry
+# form="tool_quizbulkedit_settings", which points at the settings moodleform
+# rendered after it on the page (see classes/form/settings_form.php). The linter
+# renders the template on its own, where no such form exists, so the HTML
+# validator always reports "The form attribute must refer to a form element"
+# for markup that is correct on the real page.
+quiztable.mustache

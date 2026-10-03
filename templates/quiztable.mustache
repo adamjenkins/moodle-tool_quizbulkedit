@@ -1,0 +1,139 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_quizbulkedit/quiztable
+
+    The course's quizzes the user may bulk edit, each with a selection checkbox.
+    The checkboxes sit outside the settings form and carry form="formid" so they
+    post with it as cmids[]. A Filter by name box hides the rows whose name does
+    not contain the typed text; the select-all checkbox acts on the shown rows only.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * data-region="tool_quizbulkedit-quiztable" with data-formid - the table wrapper
+    * data-region="tool_quizbulkedit-filter" - the name filter box
+    * data-region="tool_quizbulkedit-selectall" - the select-all checkbox
+    * data-region="tool_quizbulkedit-quizrow" with data-name - a quiz's row (data-name is the plain-text name)
+    * data-region="tool_quizbulkedit-select" - a quiz's selection checkbox
+    * data-region="tool_quizbulkedit-nomatch" - the row shown when the filter matches nothing
+
+    Context variables required for this template:
+    * formid string - the id of the settings form the checkboxes submit with
+    * hasrows bool - whether there are quizzes (shows the filter)
+    * showcompletion bool - whether to show the Completion tracking column
+    * colcount int - number of columns, for the no-match row's colspan
+    * quizzes array - the quizzes, in course order
+      * cmid int - the course module id
+      * name string - the quiz name, already formatted with format_string() (HTML)
+      * filtername string - the quiz name as plain text, for the filter
+      * selectlabel string - the accessible name of the selection checkbox (plain text)
+      * url string - the quiz's view page
+      * selected bool - whether the quiz is ticked
+      * maxgrade string - the formatted maximum grade
+      * gradepass string - the formatted grade to pass
+      * attempts string - the attempts allowed
+      * completion string - the completion tracking (when showcompletion)
+
+    Example context (json):
+    {
+        "formid": "tool_quizbulkedit_settings",
+        "hasrows": true,
+        "showcompletion": true,
+        "colcount": 6,
+        "quizzes": [
+            {
+                "cmid": 12,
+                "name": "Week 1 quiz",
+                "filtername": "Week 1 quiz",
+                "selectlabel": "Select Week 1 quiz",
+                "url": "https://example.com/mod/quiz/view.php?id=12",
+                "selected": true,
+                "maxgrade": "10.00",
+                "gradepass": "5.00",
+                "attempts": "Unlimited",
+                "completion": "Show activity as complete when conditions are met"
+            },
+            {
+                "cmid": 13,
+                "name": "Week 2 quiz",
+                "filtername": "Week 2 quiz",
+                "selectlabel": "Select Week 2 quiz",
+                "url": "https://example.com/mod/quiz/view.php?id=13",
+                "selected": false,
+                "maxgrade": "20.00",
+                "gradepass": "0.00",
+                "attempts": "2",
+                "completion": "Do not indicate activity completion"
+            }
+        ]
+    }
+}}
+<div data-region="tool_quizbulkedit-quiztable" data-formid="{{formid}}" class="mb-4">
+    <h3>{{#str}}selectquizzes, tool_quizbulkedit{{/str}}</h3>
+    {{#hasrows}}
+    <div class="mb-2">
+        <label class="form-label" for="tool_quizbulkedit_filter">{{#str}}filterbyname, tool_quizbulkedit{{/str}}</label>
+        <input type="search" class="form-control w-auto" id="tool_quizbulkedit_filter" data-region="tool_quizbulkedit-filter"
+            autocomplete="off" aria-controls="tool_quizbulkedit_table">
+    </div>
+    {{/hasrows}}
+    <div class="table-responsive">
+        <table class="table table-hover table-striped generaltable" id="tool_quizbulkedit_table">
+            <thead>
+                <tr>
+                    <th scope="col">
+                        <input type="checkbox" class="form-check-input" id="tool_quizbulkedit_selectall"
+                            data-region="tool_quizbulkedit-selectall" title="{{#str}}selectallshown, tool_quizbulkedit{{/str}}">
+                        <label class="visually-hidden" for="tool_quizbulkedit_selectall">{{#str}}selectallshown, tool_quizbulkedit{{/str}}</label>
+                    </th>
+                    <th scope="col">{{#str}}name{{/str}}</th>
+                    <th scope="col">{{#str}}setting_maxgrade, tool_quizbulkedit{{/str}}</th>
+                    <th scope="col">{{#str}}setting_gradepass, tool_quizbulkedit{{/str}}</th>
+                    <th scope="col">{{#str}}setting_attempts, tool_quizbulkedit{{/str}}</th>
+                    {{#showcompletion}}
+                    <th scope="col">{{#str}}setting_completion, tool_quizbulkedit{{/str}}</th>
+                    {{/showcompletion}}
+                </tr>
+            </thead>
+            <tbody>
+                {{#hasrows}}
+                <tr data-region="tool_quizbulkedit-nomatch" hidden>
+                    <td colspan="{{colcount}}">{{#str}}nofiltermatch, tool_quizbulkedit{{/str}}</td>
+                </tr>
+                {{/hasrows}}
+                {{#quizzes}}
+                <tr data-region="tool_quizbulkedit-quizrow" data-name="{{filtername}}">
+                    <td>
+                        <input type="checkbox" class="form-check-input" name="cmids[]" value="{{cmid}}" form="{{formid}}"
+                            id="tool_quizbulkedit_cm_{{cmid}}" data-region="tool_quizbulkedit-select"{{#selected}} checked{{/selected}}>
+                        <label class="visually-hidden" for="tool_quizbulkedit_cm_{{cmid}}">{{selectlabel}}</label>
+                    </td>
+                    <td><a href="{{url}}">{{{name}}}</a></td>
+                    <td>{{maxgrade}}</td>
+                    <td>{{gradepass}}</td>
+                    <td>{{attempts}}</td>
+                    {{#showcompletion}}
+                    <td>{{completion}}</td>
+                    {{/showcompletion}}
+                </tr>
+                {{/quizzes}}
+            </tbody>
+        </table>
+    </div>
+</div>

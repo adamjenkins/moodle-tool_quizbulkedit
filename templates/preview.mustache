@@ -1,0 +1,151 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_quizbulkedit/preview
+
+    What applying the requested settings would do to each selected quiz: the
+    settings that change (current and new value), and the errors that stop a
+    quiz from being changed, the warnings and the notes. Nothing has been
+    written yet. The stale bar is shown by JS when the settings or the
+    selection change after the preview.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * data-region="tool_quizbulkedit-preview" - the preview wrapper
+    * data-region="tool_quizbulkedit-stale" - the stale-preview bar, inside an always-present live region
+    * data-region="tool_quizbulkedit-previewquiz" with data-cmid and data-status - one quiz's preview
+
+    Context variables required for this template:
+    * summary string - how many quizzes change, do not change, cannot be changed (plain text)
+    * canapply bool - whether any quiz can be changed
+    * needsconfirm bool - whether applying resets completion data (a confirmation is required)
+    * quizzes array - one entry per selected quiz, in course order
+      * cmid int - the course module id
+      * name string - the quiz name, already formatted with format_string() (HTML)
+      * url string - the quiz's view page
+      * status string - change, nochange or error
+      * statustext string - the status as text
+      * iserror bool - whether the quiz cannot be changed
+      * ischange bool - whether the quiz will change
+      * hasrows bool - whether there are changed settings to list
+      * rows array - the changed settings (plain text)
+        * key string - the setting key
+        * label string - the setting name
+        * old string - the current value
+        * new string - the new value
+      * errors array - each with message (plain text): why the quiz cannot be changed
+      * warnings array - each with message (plain text)
+      * notes array - each with message (plain text)
+
+    Example context (json):
+    {
+        "summary": "2 quizzes will change, 0 will not change, 1 cannot be changed.",
+        "canapply": true,
+        "needsconfirm": true,
+        "quizzes": [
+            {
+                "cmid": 12,
+                "name": "Week 1 quiz",
+                "url": "https://example.com/mod/quiz/view.php?id=12",
+                "status": "change",
+                "statustext": "Will change",
+                "iserror": false,
+                "ischange": true,
+                "hasrows": true,
+                "rows": [
+                    {"key": "gradepass", "label": "Grade to pass", "old": "0.00", "new": "5.00"},
+                    {"key": "completion", "label": "Completion tracking",
+                        "old": "Students can manually mark the activity as completed",
+                        "new": "Show activity as complete when conditions are met"}
+                ],
+                "errors": [],
+                "warnings": [{"message": "Students have completion data for this quiz."}],
+                "notes": []
+            },
+            {
+                "cmid": 13,
+                "name": "Week 2 quiz",
+                "url": "https://example.com/mod/quiz/view.php?id=13",
+                "status": "error",
+                "statustext": "Cannot be changed",
+                "iserror": true,
+                "ischange": false,
+                "hasrows": false,
+                "rows": [],
+                "errors": [{"message": "The grade to pass (12.00) would be higher than the maximum grade (10.00)."}],
+                "warnings": [],
+                "notes": []
+            }
+        ]
+    }
+}}
+<div data-region="tool_quizbulkedit-preview" class="tool_quizbulkedit-preview">
+    <div role="status">
+        <div data-region="tool_quizbulkedit-stale" class="alert alert-warning" hidden>{{#str}}previewstale, tool_quizbulkedit{{/str}}</div>
+    </div>
+    <p class="fw-bold">{{summary}}</p>
+    {{#quizzes}}
+    <div class="card mb-3" data-region="tool_quizbulkedit-previewquiz" data-cmid="{{cmid}}" data-status="{{status}}">
+        <div class="card-header d-flex flex-wrap align-items-center">
+            <a class="me-2 fw-bold" href="{{url}}">{{{name}}}</a>
+            <span class="badge {{#iserror}}bg-danger{{/iserror}}{{#ischange}}bg-success{{/ischange}}{{^iserror}}{{^ischange}}bg-secondary{{/ischange}}{{/iserror}}">{{statustext}}</span>
+        </div>
+        <div class="card-body">
+            {{#errors}}
+            <div class="alert alert-danger mb-2">{{message}}</div>
+            {{/errors}}
+            {{#warnings}}
+            <div class="alert alert-warning mb-2">{{message}}</div>
+            {{/warnings}}
+            {{#notes}}
+            <div class="alert alert-info mb-2">{{message}}</div>
+            {{/notes}}
+            {{#hasrows}}
+            <table class="table table-sm generaltable mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">{{#str}}previewsetting, tool_quizbulkedit{{/str}}</th>
+                        <th scope="col">{{#str}}previewold, tool_quizbulkedit{{/str}}</th>
+                        <th scope="col">{{#str}}previewnew, tool_quizbulkedit{{/str}}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#rows}}
+                    <tr data-key="{{key}}">
+                        <th scope="row">{{label}}</th>
+                        <td>{{old}}</td>
+                        <td>{{new}}</td>
+                    </tr>
+                    {{/rows}}
+                </tbody>
+            </table>
+            {{/hasrows}}
+            {{^hasrows}}{{^iserror}}
+            <p class="mb-0">{{#str}}previewnochange, tool_quizbulkedit{{/str}}</p>
+            {{/iserror}}{{/hasrows}}
+        </div>
+    </div>
+    {{/quizzes}}
+    {{#needsconfirm}}
+    <div class="alert alert-warning">{{#str}}confirmneeded, tool_quizbulkedit{{/str}}</div>
+    {{/needsconfirm}}
+    {{^canapply}}
+    <div class="alert alert-info">{{#str}}nothingtoapply, tool_quizbulkedit{{/str}}</div>
+    {{/canapply}}
+</div>
