@@ -131,4 +131,32 @@ final class quiz_lister_test extends \advanced_testcase {
         $this->assertSame([5, 7], quiz_lister::filter_cmids(['7', 5, 5, 8, -1], $eligible));
         $this->assertSame([], quiz_lister::filter_cmids([], $eligible));
     }
+
+    /**
+     * Quizzes are listed in course-page order, with a subsection's quizzes inline.
+     *
+     * Fails if quiz_lister::get_eligible() iterates get_cms() without sort_cm_array():
+     * the subsection's quiz then comes last.
+     */
+    public function test_course_page_order(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        $generator = $this->getDataGenerator();
+        $course = $generator->create_course(['numsections' => 2]);
+        $first = $generator->create_module('quiz', ['course' => $course->id, 'section' => 1, 'name' => 'QBE first']);
+        $subsection = $generator->create_module('subsection', ['course' => $course->id, 'section' => 1]);
+        $after = $generator->create_module('quiz', ['course' => $course->id, 'section' => 1, 'name' => 'QBE after']);
+        $later = $generator->create_module('quiz', ['course' => $course->id, 'section' => 2, 'name' => 'QBE later']);
+        $delegated = get_fast_modinfo($course)->get_sections_delegated_by_cm()[$subsection->cmid];
+        $inside = $generator->create_module('quiz', [
+            'course' => $course->id,
+            'section' => $delegated->section,
+            'name' => 'QBE inside',
+        ]);
+        // The subsection module sits before 'QBE after' in section 1, so its content does too.
+        $this->assertSame(
+            [(int) $first->cmid, (int) $inside->cmid, (int) $after->cmid, (int) $later->cmid],
+            array_keys(quiz_lister::get_eligible($course->id))
+        );
+    }
 }

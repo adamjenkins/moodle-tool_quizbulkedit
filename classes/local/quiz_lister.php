@@ -32,7 +32,7 @@ namespace tool_quizbulkedit\local;
  */
 class quiz_lister {
     /**
-     * The quizzes of a course the user may bulk edit, in course order.
+     * The quizzes of a course the user may bulk edit, in course-page order (subsection content inline).
      *
      * Each entry is an object with:
      * - cm: \cm_info
@@ -84,10 +84,13 @@ class quiz_lister {
             $gradeitems[(int) $item->iteminstance] = $item;
         }
 
+        // Course-page order: get_cms() lists subsection content after every listed section,
+        // sort_cm_array() puts it inline where the subsection sits.
+        $modinfo->sort_cm_array($cms);
+
         $result = [];
-        foreach ($modinfo->get_cms() as $cm) {
-            $cmid = (int) $cm->id;
-            if (!isset($cms[$cmid]) || !isset($quizzes[$cm->instance]) || !isset($cmrecords[$cmid])) {
+        foreach ($cms as $cmid => $cm) {
+            if (!isset($quizzes[$cm->instance]) || !isset($cmrecords[$cmid])) {
                 continue;
             }
             $item = $gradeitems[(int) $cm->instance] ?? null;

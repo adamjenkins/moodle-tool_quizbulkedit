@@ -2,6 +2,13 @@
 
 All notable changes to `tool_quizbulkedit` are documented in this file.
 
+## [Unreleased]
+
+### Fixed
+
+- The quiz list is in course-page order (`course_modinfo::sort_cm_array()`),
+  so a subsection's quizzes are listed inline instead of last.
+
 ## [0.1.0] - 2026-10-03
 
 ### Added

@@ -1,5 +1,10 @@
 # Changes
 
+## Unreleased
+
+- The quiz list follows the order of the course page: quizzes inside a
+  subsection are listed where the subsection sits, not at the end.
+
 ## v0.1.0
 
 - First release. From a course's administration menu, **Bulk edit quizzes**
