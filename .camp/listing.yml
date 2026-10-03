@@ -1,0 +1,24 @@
+# camp listing manifest — descriptive content for your plugin's page.
+# Edit freely and commit; camp ingests this file at each tagged release.
+# Schema: https://camp-registry.org/schema/listing.schema.json
+name: tool_quizbulkedit
+summary: 'A Moodle admin tool that changes the settings of some or all quizzes in a course in one go, with a preview before anything is saved.'
+description: |
+  For teachers and managers who need to change the same quiz settings across a
+  course. Tick the quizzes, tick a Change box for each setting to change (review
+  options, grade to pass in points or as a percentage of each quiz's maximum
+  grade, maximum grade, attempts, question behaviour, timing, display and
+  completion), then Preview shows each quiz's current and new values before
+  Apply changes. Teachers can save named configurations per course, and site
+  administrators can publish admin presets that every course can load.
+labels:
+  # Required disclosure labels — pick all that apply (RFC §4.7):
+  #   fully-free | freemium | paid-service | external-account
+  #   donation-supported | commercial-support-available
+  - fully-free
+# screenshots:
+#   - path: .camp/screenshots/overview.png
+#     caption: Main view
+links:
+  docs: https://github.com/adamjenkins/moodle-tool_quizbulkedit#readme
+  issues: https://github.com/adamjenkins/moodle-tool_quizbulkedit/issues
