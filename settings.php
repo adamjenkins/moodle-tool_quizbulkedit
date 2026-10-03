@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Plugin version metadata for tool_quizbulkedit.
+ * Site administration: the admin presets page.
  *
  * @package    tool_quizbulkedit
  * @copyright  2026 Adam Jenkins <adam@wisecat.net>
@@ -24,9 +24,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'tool_quizbulkedit';
-$plugin->version   = 2026100301;
-$plugin->requires  = 2026042000; // Moodle 5.2.
-$plugin->supported = [502, 503];
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.1.0';
+if ($hassiteconfig) {
+    $ADMIN->add('tools', new admin_externalpage(
+        'tool_quizbulkedit_presets',
+        new lang_string('adminpresets', 'tool_quizbulkedit'),
+        new moodle_url('/admin/tool/quizbulkedit/presets.php'),
+        'moodle/site:config'
+    ));
+}

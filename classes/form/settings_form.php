@@ -17,6 +17,7 @@
 namespace tool_quizbulkedit\form;
 
 use tool_quizbulkedit\local\change_request;
+use tool_quizbulkedit\local\saved_configs;
 use tool_quizbulkedit\local\settings_catalogue;
 
 defined('MOODLE_INTERNAL') || die();
@@ -37,7 +38,10 @@ require_once($CFG->libdir . '/formslib.php');
  * tool_quizbulkedit/quiztable) and carry form="FORM_ID" so they post with it.
  *
  * Custom data:
- * - courseid int
+ * - mode string: MODE_COURSE (default: the course page) or MODE_PRESET (the site admin
+ *   presets page: a name, the settings and Save preset, no preview)
+ * - courseid int (course mode)
+ * - presetid int (preset mode): the preset being edited, 0 for a new one
  * - showcompletion bool: add the Completion section (completion enabled for site and course)
  * - previewhtml string|null: the rendered preview; when set, a Preview section shows it
  * - canapply bool: add the Apply changes button (a preview with something to apply)
@@ -52,6 +56,12 @@ class settings_form extends \moodleform {
     /** @var string the form's HTML id, referenced by the quiz table's checkboxes. */
     public const FORM_ID = 'tool_quizbulkedit_settings';
 
+    /** @var string the course page. */
+    public const MODE_COURSE = 'course';
+
+    /** @var string the site admin presets page. */
+    public const MODE_PRESET = 'preset';
+
     /** @var string[] form element name => name of the group it is in, to place validation errors. */
     protected array $groupof = [];
 
@@ -63,8 +73,20 @@ class settings_form extends \moodleform {
         $mform->updateAttributes(['id' => self::FORM_ID]);
         $customdata = $this->_customdata;
 
-        $mform->addElement('hidden', 'courseid', (int) $customdata['courseid']);
-        $mform->setType('courseid', PARAM_INT);
+        $presetmode = ($customdata['mode'] ?? self::MODE_COURSE) === self::MODE_PRESET;
+        if ($presetmode) {
+            $mform->addElement('hidden', 'presetid', (int) ($customdata['presetid'] ?? 0));
+            $mform->setType('presetid', PARAM_INT);
+            $mform->addElement('text', 'configname', get_string('presetname', 'tool_quizbulkedit'), ['size' => 40]);
+            $mform->setType('configname', PARAM_TEXT);
+            $mform->addRule('configname', null, 'required', null, 'client');
+            $mform->addRule('configname', get_string('maximumchars', '', 255), 'maxlength', 255, 'client');
+            // Presets are site-wide: offer the completion settings for courses that track completion.
+            $customdata['showcompletion'] = true;
+        } else {
+            $mform->addElement('hidden', 'courseid', (int) $customdata['courseid']);
+            $mform->setType('courseid', PARAM_INT);
+        }
 
         $quizconfig = get_config('quiz');
         foreach (settings_catalogue::get_groups() as $section => $keys) {
@@ -103,12 +125,28 @@ class settings_form extends \moodleform {
             $mform->setConstant('fingerprint', (string) ($customdata['fingerprint'] ?? ''));
         }
 
+        if ($presetmode) {
+            $this->add_action_buttons(true, get_string('savepreset', 'tool_quizbulkedit'));
+            return;
+        }
+
         $buttons = [$mform->createElement('submit', 'preview', get_string('preview', 'tool_quizbulkedit'))];
         if (!empty($customdata['canapply'])) {
             $buttons[] = $mform->createElement('submit', 'apply', get_string('apply', 'tool_quizbulkedit'));
         }
         $mform->addGroup($buttons, 'buttonar', '', ' ', false);
         $mform->closeHeaderBefore('buttonar');
+
+        // Save the form's settings and the ticked quizzes under a name; this writes nothing to any quiz.
+        $mform->addElement('header', 'section_saveconfig', get_string('saveconfigheading', 'tool_quizbulkedit'));
+        $mform->setExpanded('section_saveconfig', false);
+        $savegroup = [
+            $mform->createElement('text', 'configname', get_string('configname', 'tool_quizbulkedit'), ['size' => 30]),
+            $mform->createElement('submit', 'saveconfig', get_string('saveconfig', 'tool_quizbulkedit')),
+        ];
+        $mform->setType('configname', PARAM_TEXT);
+        $mform->addGroup($savegroup, 'saveconfiggrp', get_string('configname', 'tool_quizbulkedit'), ' ', false);
+        $this->groupof['configname'] = 'saveconfiggrp';
     }
 
     /**
@@ -245,6 +283,11 @@ class settings_form extends \moodleform {
      */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
+        $presetmode = ($this->_customdata['mode'] ?? self::MODE_COURSE) === self::MODE_PRESET;
+        $needsname = $presetmode || !empty($data['saveconfig']);
+        if ($needsname && saved_configs::clean_name((string) ($data['configname'] ?? '')) === '') {
+            $errors[$presetmode ? 'configname' : 'saveconfiggrp'] = get_string('error_configname', 'tool_quizbulkedit');
+        }
         foreach (change_request::validate_form_data($data) as $name => $message) {
             // Errors show on the group a value element sits in.
             $target = $this->groupof[$name] ?? $name;

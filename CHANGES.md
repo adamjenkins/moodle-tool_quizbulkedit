@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **Saved configurations**: save the settings and the ticked quizzes under a
+  name in a course, then load or delete them later. Loading changes no quiz.
+- **Admin presets**: site administrators define named settings presets
+  (*Site administration > Plugins > Admin tools > Quiz bulk edit presets*),
+  which every course's page offers to load.
 - The quiz list follows the order of the course page: quizzes inside a
   subsection are listed where the subsection sits, not at the end.
 

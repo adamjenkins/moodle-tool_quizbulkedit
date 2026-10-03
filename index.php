@@ -36,6 +36,7 @@ use tool_quizbulkedit\local\apply_result;
 use tool_quizbulkedit\local\change_request;
 use tool_quizbulkedit\local\planner;
 use tool_quizbulkedit\local\quiz_lister;
+use tool_quizbulkedit\local\saved_configs;
 use tool_quizbulkedit\output\preview;
 use tool_quizbulkedit\output\quiztable;
 
@@ -54,6 +55,26 @@ $PAGE->set_title(get_string('pluginname', 'tool_quizbulkedit'));
 $PAGE->set_heading($course->fullname);
 navigation_node::override_active_url($url);
 
+// Delete a saved configuration of the course: ask first, then delete on the confirmed, sesskey'd request.
+$deleteid = optional_param('deleteconfig', 0, PARAM_INT);
+if ($deleteid) {
+    $config = saved_configs::get($courseid, $deleteid);
+    if (optional_param('confirm', 0, PARAM_BOOL)) {
+        require_sesskey();
+        saved_configs::delete($courseid, $deleteid);
+        redirect($url, get_string('configdeleted', 'tool_quizbulkedit', s($config->name)), null, notification::NOTIFY_SUCCESS);
+    }
+    echo $OUTPUT->header();
+    echo $OUTPUT->heading(get_string('savedconfigs', 'tool_quizbulkedit'));
+    echo $OUTPUT->confirm(
+        get_string('deleteconfigconfirm', 'tool_quizbulkedit', s($config->name)),
+        new moodle_url($url, ['deleteconfig' => $deleteid, 'confirm' => 1, 'sesskey' => sesskey()]),
+        $url
+    );
+    echo $OUTPUT->footer();
+    exit;
+}
+
 // Every request re-derives the quizzes this user may edit; posted ids are only ever filtered through it.
 $eligible = quiz_lister::get_eligible($courseid);
 if (!$eligible) {
@@ -71,8 +92,34 @@ $mform = new settings_form($url, $formdata);
 $postedcmids = optional_param_array('cmids', [], PARAM_INT);
 $selected = quiz_lister::filter_cmids($postedcmids, $eligible);
 
+// Load a course configuration or an admin preset (a sesskey'd link): it only fills the form.
+$loadid = optional_param('loadconfig', 0, PARAM_INT);
+$loadpresetid = optional_param('loadpreset', 0, PARAM_INT);
+if (($loadid || $loadpresetid) && !$mform->is_submitted()) {
+    require_sesskey();
+    $config = $loadid ? saved_configs::get($courseid, $loadid) : saved_configs::get(saved_configs::PRESETS, $loadpresetid);
+    $snapshot = saved_configs::decode($config);
+    $mform->set_data((object) ($snapshot['fields'] + ['configname' => $loadid ? $config->name : '']));
+    if ($loadid) {
+        $selected = quiz_lister::filter_cmids($snapshot['cmids'], $eligible);
+    }
+    \core\notification::info(get_string($loadid ? 'configloaded' : 'presetloaded', 'tool_quizbulkedit', s($config->name)));
+}
+
 $displayform = $mform;
-if ($data = $mform->get_data()) {
+$data = $mform->get_data();
+if ($data && optional_param('saveconfig', '', PARAM_RAW) !== '') {
+    // Save configuration: the form's settings and the ticked quizzes; nothing is written to any quiz.
+    $name = saved_configs::clean_name((string) $data->configname);
+    $replaced = saved_configs::save($courseid, $name, saved_configs::snapshot($data, $selected));
+    $saved = $DB->get_record(saved_configs::TABLE, ['courseid' => $courseid, 'name' => $name], 'id', MUST_EXIST);
+    redirect(
+        new moodle_url($url, ['loadconfig' => $saved->id, 'sesskey' => sesskey()]),
+        get_string($replaced ? 'configreplaced' : 'configsaved', 'tool_quizbulkedit', s($name)),
+        null,
+        notification::NOTIFY_SUCCESS
+    );
+} else if ($data) {
     // The form has checked the sesskey and validated every ticked setting.
     $request = change_request::from_form_data($data);
     if (!$selected) {
@@ -151,5 +198,25 @@ echo $OUTPUT->heading(get_string('pluginname', 'tool_quizbulkedit'));
 echo html_writer::tag('p', s(get_string('intro', 'tool_quizbulkedit')));
 $table = new quiztable($eligible, $selected, $showcompletion, settings_form::FORM_ID);
 echo $OUTPUT->render_from_template('tool_quizbulkedit/quiztable', $table->export_for_template($OUTPUT));
+$configlist = function (int $owner, string $param, bool $deletable) use ($url): array {
+    $configs = [];
+    foreach (saved_configs::list($owner) as $config) {
+        $configs[] = [
+            'name' => $config->name,
+            'timemodified' => userdate($config->timemodified, get_string('strftimedatetimeshort', 'core_langconfig')),
+            'loadurl' => (new moodle_url($url, [$param => $config->id, 'sesskey' => sesskey()]))->out(false),
+            'deleteurl' => $deletable ? (new moodle_url($url, ['deleteconfig' => $config->id]))->out(false) : null,
+        ];
+    }
+    return $configs;
+};
+$courseconfigs = $configlist($courseid, 'loadconfig', true);
+$presets = $configlist(saved_configs::PRESETS, 'loadpreset', false);
+echo $OUTPUT->render_from_template('tool_quizbulkedit/savedconfigs', [
+    'configs' => $courseconfigs,
+    'hasconfigs' => (bool) $courseconfigs,
+    'presets' => $presets,
+    'haspresets' => (bool) $presets,
+]);
 $displayform->display();
 echo $OUTPUT->footer();

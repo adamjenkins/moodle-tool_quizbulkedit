@@ -1,0 +1,108 @@
+{{!
+    This file is part of Moodle - https://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template tool_quizbulkedit/savedconfigs
+
+    The course's saved configurations (Load, Delete) and the site's admin presets (Load).
+    Loading only fills the settings form; nothing is written to any quiz.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * hasconfigs bool - whether the course has any configuration
+    * configs array - the course's configurations, sorted by name
+      * name string - the configuration's name
+      * timemodified string - when it was last saved, formatted
+      * loadurl string - the URL that loads it into the form
+      * deleteurl string - the URL that asks to delete it
+    * haspresets bool - whether the site has any admin preset
+    * presets array - the admin presets, sorted by name (name, timemodified, loadurl)
+
+    Example context (json):
+    {
+        "hasconfigs": true,
+        "configs": [
+            {"name": "Mid-term review options", "timemodified": "3/10/26, 09:15", "loadurl": "#", "deleteurl": "#"}
+        ],
+        "haspresets": true,
+        "presets": [
+            {"name": "Department standard", "timemodified": "1/10/26, 12:00", "loadurl": "#"}
+        ]
+    }
+}}
+<div class="mb-3" data-region="tool_quizbulkedit-savedconfigs">
+    <h3 class="h5">{{#str}}savedconfigs, tool_quizbulkedit{{/str}}</h3>
+    {{#hasconfigs}}
+        <table class="table table-sm generaltable w-auto">
+            <thead>
+                <tr>
+                    <th scope="col">{{#str}}configname, tool_quizbulkedit{{/str}}</th>
+                    <th scope="col">{{#str}}configsavedon, tool_quizbulkedit{{/str}}</th>
+                    <th scope="col"><span class="visually-hidden">{{#str}}actions{{/str}}</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#configs}}
+                    <tr>
+                        <td>{{name}}</td>
+                        <td>{{timemodified}}</td>
+                        <td class="text-nowrap">
+                            <a class="btn btn-secondary btn-sm" href="{{loadurl}}">
+                                {{#str}}load, tool_quizbulkedit{{/str}}<span class="visually-hidden"> {{name}}</span>
+                            </a>
+                            <a class="btn btn-outline-danger btn-sm ms-1" href="{{deleteurl}}">
+                                {{#str}}delete{{/str}}<span class="visually-hidden"> {{name}}</span>
+                            </a>
+                        </td>
+                    </tr>
+                {{/configs}}
+            </tbody>
+        </table>
+    {{/hasconfigs}}
+    {{^hasconfigs}}
+        <p class="text-muted">{{#str}}nosavedconfigs, tool_quizbulkedit{{/str}}</p>
+    {{/hasconfigs}}
+    {{#haspresets}}
+        <h3 class="h5">{{#str}}adminpresets, tool_quizbulkedit{{/str}}</h3>
+        <table class="table table-sm generaltable w-auto">
+            <thead>
+                <tr>
+                    <th scope="col">{{#str}}presetname, tool_quizbulkedit{{/str}}</th>
+                    <th scope="col">{{#str}}configsavedon, tool_quizbulkedit{{/str}}</th>
+                    <th scope="col"><span class="visually-hidden">{{#str}}actions{{/str}}</span></th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#presets}}
+                    <tr>
+                        <td>{{name}}</td>
+                        <td>{{timemodified}}</td>
+                        <td>
+                            <a class="btn btn-secondary btn-sm" href="{{loadurl}}">
+                                {{#str}}load, tool_quizbulkedit{{/str}}<span class="visually-hidden"> {{name}}</span>
+                            </a>
+                        </td>
+                    </tr>
+                {{/presets}}
+            </tbody>
+        </table>
+    {{/haspresets}}
+</div>

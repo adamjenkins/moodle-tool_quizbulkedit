@@ -14,19 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+namespace tool_quizbulkedit;
+
+use tool_quizbulkedit\local\saved_configs;
+
 /**
- * Plugin version metadata for tool_quizbulkedit.
+ * Observer class handling core events for tool_quizbulkedit.
  *
  * @package    tool_quizbulkedit
  * @copyright  2026 Adam Jenkins <adam@wisecat.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->component = 'tool_quizbulkedit';
-$plugin->version   = 2026100301;
-$plugin->requires  = 2026042000; // Moodle 5.2.
-$plugin->supported = [502, 503];
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.1.0';
+class observer {
+    /**
+     * Delete a deleted course's saved configurations (Moodle does not cascade).
+     *
+     * @param \core\event\course_deleted $event
+     */
+    public static function course_deleted(\core\event\course_deleted $event): void {
+        global $DB;
+        if ((int) $event->courseid > 0) {
+            $DB->delete_records(saved_configs::TABLE, ['courseid' => (int) $event->courseid]);
+        }
+    }
+}

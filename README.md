@@ -63,6 +63,18 @@ What happens when a setting changes, as in core:
   completion data for deletes and recalculates that data; Apply changes then
   needs a confirmation.
 
+## Saved configurations and admin presets
+
+- **Save configuration** (below the settings) stores the form's settings and the
+  ticked quizzes under a name, for the course. **Load** puts them back into the
+  form; **Delete** removes one after a confirmation. Saving and loading change no
+  quiz: a loaded configuration still goes through Preview and Apply changes.
+- **Admin presets**: in *Site administration > Plugins > Admin tools > Quiz bulk
+  edit presets*, an administrator creates named presets of settings with the same
+  form. Every course's page lists them under *Admin presets* with a **Load**
+  button (presets hold settings only; the teacher ticks the quizzes).
+- A course's configurations are deleted with the course.
+
 ## Permissions
 
 The page needs `tool/quizbulkedit:manage` in the course (editing teachers and
@@ -72,8 +84,8 @@ completion). Only quizzes on which the user also has
 
 ## Privacy
 
-The plugin stores no data of its own and implements Moodle's privacy
-`null_provider`.
+The plugin stores no personal data (saved configurations hold quiz settings and
+quiz ids, with no user reference) and implements Moodle's privacy `null_provider`.
 
 ## License
 

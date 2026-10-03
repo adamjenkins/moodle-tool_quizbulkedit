@@ -4,6 +4,14 @@ All notable changes to `tool_quizbulkedit` are documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Saved configurations per course and site-wide admin presets, in the new table
+  `tool_quizbulkedit_config` (`courseid` 0 = preset): `local\saved_configs`,
+  the presets page `presets.php` (`moodle/site:config`, Admin tools), Save
+  configuration / Load / Delete on the course page, a `course_deleted`
+  observer. `$plugin->version` 2026100301 (schema change; release unchanged).
+
 ### Fixed
 
 - The quiz list is in course-page order (`course_modinfo::sort_cm_array()`),
