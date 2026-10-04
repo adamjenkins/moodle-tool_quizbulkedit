@@ -3,7 +3,7 @@
     "description": "A Moodle admin tool that changes the settings of some or all quizzes in a course in one go",
     "type": "moodle-tool",
     "require": {
-        "moodle/moodle": ">=5.2 <5.4",
+        "moodle/moodle": "^5.2",
         "moodle/composer-installer": "^1.0"
     },
     "license": "GPL-3.0-or-later"
