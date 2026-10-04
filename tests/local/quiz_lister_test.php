@@ -89,6 +89,8 @@ final class quiz_lister_test extends \advanced_testcase {
     public function test_foreign_course_cmid_rejected(): void {
         global $DB;
         $this->resetAfterTest();
+        // The applier refuses to run inside the harness's per-test transaction (PostgreSQL); see applier_test.
+        $this->preventResetByRollback();
         $this->setAdminUser();
         $generator = $this->getDataGenerator();
         $course = $generator->create_course();

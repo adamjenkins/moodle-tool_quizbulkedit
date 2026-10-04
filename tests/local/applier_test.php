@@ -47,6 +47,9 @@ final class applier_test extends \advanced_testcase {
         require_once($CFG->libdir . '/completionlib.php');
         require_once($CFG->libdir . '/gradelib.php');
         $this->resetAfterTest();
+        // On PostgreSQL the test harness wraps each test in a transaction, which the applier refuses to run inside
+        // (it isolates each quiz in its own transaction). Reset by a full rollback-free reset instead.
+        $this->preventResetByRollback();
         $this->setAdminUser();
         $CFG->enablecompletion = 1;
     }
