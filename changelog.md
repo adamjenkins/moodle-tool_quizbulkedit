@@ -2,7 +2,7 @@
 
 All notable changes to `tool_quizbulkedit` are documented in this file.
 
-## [Unreleased]
+## [0.1.1] - 2026-10-04
 
 ### Added
 
@@ -11,6 +11,9 @@ All notable changes to `tool_quizbulkedit` are documented in this file.
   the presets page `presets.php` (`moodle/site:config`, Admin tools), Save
   configuration / Load / Delete on the course page, a `course_deleted`
   observer. `$plugin->version` 2026100301 (schema change; release unchanged).
+- `composer.json` (`adamjenkins/moodle-tool_quizbulkedit`, type `moodle-tool`,
+  `moodle/moodle` `>=5.2 <5.4`) so Composer can install the plugin.
+- Tagged releases are published to the camp plugin registry.
 
 ### Fixed
 

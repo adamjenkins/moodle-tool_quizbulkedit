@@ -1,6 +1,6 @@
 # Changes
 
-## Unreleased
+## v0.1.1
 
 - **Saved configurations**: save the settings and the ticked quizzes under a
   name in a course, then load or delete them later. Loading changes no quiz.
@@ -9,17 +9,5 @@
   which every course's page offers to load.
 - The quiz list follows the order of the course page: quizzes inside a
   subsection are listed where the subsection sits, not at the end.
-
-## v0.1.0
-
-- First release. From a course's administration menu, **Bulk edit quizzes**
-  changes settings of some or all quizzes of the course in one go: maximum
-  grade, grade to pass (in points or as a percentage of each quiz's maximum
-  grade), attempts, grading method, each review options row, question
-  behaviour, layout and timing, display and restriction settings, and each
-  completion condition.
-- Every setting has its own **Change** box. Settings without a tick are not
-  written: each quiz keeps its own value.
-- **Preview** shows, for each selected quiz, the settings that would change
-  (current and new value) and anything that stops a quiz from being changed.
-  **Apply changes** writes them and reports what was changed, skipped or failed.
+- A `composer.json` lets Composer install the plugin (Moodle 5.2 to 5.3).
+- Tagged releases are published to the camp plugin registry.
