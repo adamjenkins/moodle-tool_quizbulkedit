@@ -16,9 +16,23 @@ labels:
   #   fully-free | freemium | paid-service | external-account
   #   donation-supported | commercial-support-available
   - fully-free
-# screenshots:
-#   - path: .camp/screenshots/overview.png
-#     caption: Main view
+screenshots:
+  - path: .camp/screenshots/01-select-quizzes.png
+    caption: 'Filter the course''s quizzes by name and tick the ones to change. The table shows each quiz''s current values.'
+  - path: .camp/screenshots/02-grade-to-pass.png
+    caption: 'Only settings with a ticked Change box are written. Here the grade to pass is set to 60% of each quiz''s maximum grade.'
+  - path: .camp/screenshots/03-review-options.png
+    caption: 'Review options are changed row by row: Specific feedback and Right answer are set, and the other rows are left alone.'
+  - path: .camp/screenshots/04-preview.png
+    caption: 'The preview lists each quiz''s current and new values, and warns where students already have completion data.'
+  - path: .camp/screenshots/05-confirm-and-apply.png
+    caption: Changes that would reset completion data need an explicit confirmation before Apply changes.
+  - path: .camp/screenshots/06-result.png
+    caption: 'After applying: a summary, and the table shows the new grades to pass (6 on 10-point quizzes, 12 on 20-point quizzes).'
+  - path: .camp/screenshots/07-saved-configurations.png
+    caption: Save settings and the ticked quizzes as a named configuration in the course, and load site-wide admin presets.
+  - path: .camp/screenshots/08-admin-presets.png
+    caption: Administrators manage the site-wide presets under Site administration > Plugins > Admin tools.
 links:
   docs: https://github.com/adamjenkins/moodle-tool_quizbulkedit#readme
   issues: https://github.com/adamjenkins/moodle-tool_quizbulkedit/issues
